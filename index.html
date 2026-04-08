@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi SNBT T2</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: #f0f2f5; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: white; width: 100%; max-width: 600px; min-height: 100vh; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        .hidden { display: none !important; }
+
+        /* Header SNPMB */
+        .snpmb-header { background: #004a99; color: white; padding: 15px 20px; text-align: center; font-weight: bold; font-size: 1.2rem; }
+
+        /* Forms & Inputs */
+        .content { padding: 30px; flex: 1; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 5px; color: #555; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; }
+        button { width: 100%; padding: 12px; background: #004a99; color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        button:hover { background: #003366; }
+
+        /* Queues & Loaders */
+        .center-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 40px; }
+        .timer-big { font-size: 4rem; font-weight: bold; color: #004a99; margin: 20px 0; }
+        
+        /* Exam Screen */
+        .exam-header { display: flex; justify-content: space-between; align-items: center; background: #eee; padding: 15px; border-bottom: 2px solid #ddd; }
+        .exam-timer { color: #d32f2f; font-weight: bold; font-size: 1.2rem; }
+        .question-box { margin-bottom: 25px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .question-text { font-weight: 600; margin-bottom: 10px; }
+        .options label { display: block; padding: 8px; margin-bottom: 5px; background: #f9f9f9; border-radius: 4px; cursor: pointer; border: 1px solid #eee; }
+        .options label:hover { background: #eef; }
+        .options input { margin-right: 10px; }
+
+        /* Result Card (Mirip Asli) */
+        .result-card { width: 100%; height: 100vh; display: flex; flex-direction: column; }
+        .res-header { padding: 30px 20px; color: white; font-weight: bold; }
+        .res-header-lolos { background: linear-gradient(to right, #003366, #0066cc); }
+        .res-header-gagal { background: #c62828; }
+        .res-title { font-size: 1.3rem; margin-bottom: 5px; }
+        .res-subtitle { font-size: 0.85rem; font-weight: 400; opacity: 0.9; }
+
+        .res-body { background: linear-gradient(to bottom, #222, #111); flex: 1; padding: 25px 20px; color: white; }
+        .qr-placeholder { width: 100px; height: 100px; background: white; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; color: black; font-size: 0.7rem; text-align: center; font-weight: bold; }
+        .res-noregis { color: #81d4fa; font-size: 0.9rem; margin-bottom: 10px; font-weight: 600; }
+        .res-name { font-size: 1.8rem; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
+        .res-univ { font-size: 1rem; color: #ddd; margin-bottom: 25px; text-transform: uppercase; }
+        
+        .res-data-group { margin-bottom: 15px; }
+        .res-label { color: #81d4fa; font-size: 0.85rem; font-weight: 600; margin-bottom: 2px; }
+        .res-value { font-size: 1rem; font-weight: bold; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div id="screen-login" class="content">
+        <div class="snpmb-header">PORTAL SIMULASI SNBT T2</div>
+        <p style="text-align: center; margin-bottom: 20px; margin-top: 20px; font-size: 0.9rem; color: #666;">Isi data diri dengan lengkap untuk memulai simulasi ujian.</p>
+        
+        <div class="form-group"><label>Nama Lengkap</label><input type="text" id="i_nama" required></div>
+        <div class="form-group"><label>NISN (10 Digit)</label><input type="number" id="i_nisn" required></div>
+        <div class="form-group"><label>Tanggal Lahir</label><input type="date" id="i_tgllahir" required></div>
+        <div class="form-group"><label>Asal Sekolah</label><input type="text" id="i_sekolah" placeholder="Contoh: SMPN 1 Bangkalan" required></div>
+        <div class="form-group"><label>Kabupaten/Kota</label><input type="text" id="i_kota" required></div>
+        <div class="form-group"><label>Provinsi</label><input type="text" id="i_prov" required></div>
+        
+        <div class="form-group">
+            <label>Universitas Tujuan</label>
+            <select id="i_univ">
+                <option value="UNIVERSITAS TRUNOJOYO MADURA">Universitas Trunojoyo Madura (UTM)</option>
+                <option value="UNIVERSITAS AIRLANGGA">Universitas Airlangga (UNAIR)</option>
+                <option value="UNIVERSITAS GADJAH MADA">Universitas Gadjah Mada (UGM)</option>
+                <option value="INSTITUT TEKNOLOGI BANDUNG">Institut Teknologi Bandung (ITB)</option>
+                <option value="UNIVERSITAS INDONESIA">Universitas Indonesia (UI)</option>
+                <option value="INSTITUT TEKNOLOGI SEPULUH NOPEMBER">Institut Teknologi Sepuluh Nopember (ITS)</option>
+                <option value="UNIVERSITAS BRAWIJAYA">Universitas Brawijaya (UB)</option>
+                <option value="UNIVERSITAS JENDERAL SOEDIRMAN">Universitas Jenderal Soedirman (UNSOED)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Program Studi (Fakultas)</label>
+            <select id="i_fakultas">
+                <option value="Kedokteran|90">Kedokteran (KKM: 90)</option>
+                <option value="Teknik Informatika|85">Teknik Informatika (KKM: 85)</option>
+                <option value="Ilmu Hukum|80">Ilmu Hukum (KKM: 80)</option>
+                <option value="Manajemen|82">Manajemen (KKM: 82)</option>
+                <option value="Ilmu Komunikasi|80">Ilmu Komunikasi (KKM: 80)</option>
+                <option value="Administrasi Publik|75">Administrasi Publik (KKM: 75)</option>
+                <option value="Sastra Inggris|72">Sastra Inggris (KKM: 72)</option>
+                <option value="Pendidikan Guru SD|70">Pendidikan Guru SD (KKM: 70)</option>
+            </select>
+        </div>
+
+        <button onclick="mulaiAntrean()">DAFTAR & MULAI UJIAN</button>
+    </div>
+
+    <div id="screen-queue" class="hidden content center-screen">
+        <h2>Mempersiapkan Sesi Ujian</h2>
+        <p>Mohon tunggu, jangan tutup halaman ini...</p>
+        <div class="timer-big" id="queue-timer">10</div>
+    </div>
+
+    <div id="screen-exam" class="hidden">
+        <div class="exam-header">
+            <div style="font-weight: bold;">Babak <span id="exam-round">1</span>/5</div>
+            <div class="exam-timer" id="exam-timer">04:00</div>
+        </div>
+        <div class="content" id="exam-content" style="overflow-y: auto; max-height: calc(100vh - 140px);">
+            </div>
+        <div style="padding: 15px; border-top: 1px solid #ddd; background: white;">
+            <button onclick="selesaiBabak()" id="btn-next-babak">Selesai Babak 1</button>
+        </div>
+    </div>
+
+    <div id="screen-calc" class="hidden content center-screen">
+        <h2>Sistem Sedang Menghitung Nilai</h2>
+        <p>Mencocokkan rata-rata nilai dengan KKM Fakultas pilihan Anda...</p>
+        <div class="timer-big" id="calc-timer">60</div>
+        <button id="btn-lihat-hasil" class="hidden" onclick="tampilkanHasil()">LIHAT HASIL PENGUMUMAN</button>
+    </div>
+
+    <div id="screen-result" class="hidden result-card">
+        <div id="res-header-box" class="res-header res-header-lolos">
+            <div class="res-title" id="res-status-title">SELAMAT! ANDA DINYATAKAN LULUS SELEKSI SNBT T2</div>
+            <div class="res-subtitle" id="res-status-subtitle"></div>
+        </div>
+        <div class="res-body">
+            <div class="qr-placeholder">QR<br>CODE<br>SNBT</div>
+            <div class="res-noregis">NISN <span id="res-nisn"></span> - NOREG <span id="res-noreg"></span></div>
+            <div class="res-name" id="res-nama">NAMA DUMMY</div>
+            <div class="res-univ"><span id="res-fakultas"></span> (S1)<br><span id="res-univ-text"></span></div>
+            
+            <div class="res-data-group">
+                <div class="res-label">Tanggal Lahir</div>
+                <div class="res-value" id="res-tgl"></div>
+            </div>
+            <div class="res-data-group">
+                <div class="res-label">Asal Sekolah</div>
+                <div class="res-value" id="res-sekolah"></div>
+            </div>
+            <div class="res-data-group">
+                <div class="res-label">Kabupaten/Kota</div>
+                <div class="res-value" id="res-kota"></div>
+            </div>
+            <div class="res-data-group">
+                <div class="res-label">Provinsi</div>
+                <div class="res-value" id="res-prov"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- DATABASE SOAL (30 Soal per Babak) ---
+    const bankSoal = [
+        // Babak 1: Penalaran Umum (30 Soal)
+        [
+            { q: "Jika 2, 4, 8, 16, ..., angka selanjutnya adalah?", opt: ["24", "32", "64", "20"], ans: 1 },
+            { q: "Semua mamalia bernapas dengan paru-paru. Paus adalah mamalia. Maka...", opt: ["Paus adalah ikan", "Paus bernapas dengan insang", "Paus bernapas dengan paru-paru", "Paus hidup di darat"], ans: 2 },
+            { q: "Lawan kata dari 'Progresif' adalah...", opt: ["Regresif", "Agresif", "Pasif", "Inklusif"], ans: 0 },
+            { q: "Hari ini hari Rabu. 100 hari lagi adalah hari...", opt: ["Jumat", "Sabtu", "Minggu", "Senin"], ans: 0 },
+            { q: "Buku : Perpustakaan = Obat : ...", opt: ["Dokter", "Pasien", "Apotek", "Penyakit"], ans: 2 },
+            { q: "Seri angka: 1, 3, 5, 7, ...", opt: ["8", "9", "10", "11"], ans: 1 },
+            { q: "Mobil : Garasi = Pesawat : ...", opt: ["Bandara", "Hanggar", "Stasiun", "Landasan"], ans: 1 },
+            { q: "Sinonim dari kata 'Evakuasi' adalah...", opt: ["Penyelamatan", "Penghancuran", "Pemindahan", "Pelarian"], ans: 2 },
+            { q: "Sebagian siswa memakai kacamata. Budi adalah siswa. Maka...", opt: ["Budi memakai kacamata", "Budi tidak memakai kacamata", "Tidak bisa disimpulkan", "Semua siswa memakai kacamata"], ans: 2 },
+            { q: "Jika A > B dan B > C, maka...", opt: ["A < C", "A = C", "A > C", "C > A"], ans: 2 },
+            { q: "10, 20, 30, 40, ...", opt: ["45", "50", "60", "70"], ans: 1 },
+            { q: "Guru : Sekolah = Petani : ...", opt: ["Traktor", "Sawah", "Cangkul", "Padi"], ans: 1 },
+            { q: "Lawan kata 'Optimis' adalah...", opt: ["Pesimis", "Realistis", "Fatalis", "Dinamis"], ans: 0 },
+            { q: "Jika 3 hari yang lalu adalah hari Senin, hari apakah besok?", opt: ["Kamis", "Jumat", "Sabtu", "Minggu"], ans: 1 },
+            { q: "Sebagian hewan bisa terbang. Burung unta adalah hewan. Maka...", opt: ["Burung unta bisa terbang", "Burung unta tidak bisa terbang", "Tidak bisa disimpulkan", "Burung unta adalah burung"], ans: 2 },
+            { q: "Deret angka: 2, 5, 8, 11, ...", opt: ["13", "14", "15", "16"], ans: 1 },
+            { q: "Matahari : Terang = Api : ...", opt: ["Asap", "Kayu", "Panas", "Abu"], ans: 2 },
+            { q: "Sinonim kata 'Kontemporer' adalah...", opt: ["Kuno", "Modern", "Masa depan", "Tradisional"], ans: 1 },
+            { q: "Semua bunga berwarna wangi. Mawar adalah bunga. Maka...", opt: ["Mawar tidak wangi", "Mawar berwarna wangi", "Mawar banyak durinya", "Mawar berwarna merah"], ans: 1 },
+            { q: "Jika X = Y dan Y = Z, maka...", opt: ["X > Z", "X < Z", "X = Z", "X != Z"], ans: 2 },
+            { q: "5, 10, 15, 20, ...", opt: ["22", "25", "30", "35"], ans: 1 },
+            { q: "Koki : Dapur = Masinis : ...", opt: ["Kapal", "Pesawat", "Kereta Api", "Mobil"], ans: 2 },
+            { q: "Lawan kata 'Mayoritas' adalah...", opt: ["Minoritas", "Prioritas", "Otoritas", "Solidaritas"], ans: 0 },
+            { q: "Kemarin lusa adalah hari Selasa. Hari apakah 3 hari lagi?", opt: ["Sabtu", "Minggu", "Senin", "Selasa"], ans: 1 },
+            { q: "Tidak ada ikan yang hidup di darat. Lele adalah ikan. Maka...", opt: ["Lele hidup di darat", "Lele hidup di air", "Lele adalah mamalia", "Lele bisa berjalan"], ans: 1 },
+            { q: "Deret huruf: A, C, E, G, ...", opt: ["H", "I", "J", "K"], ans: 1 },
+            { q: "Telinga : Mendengar = Hidung : ...", opt: ["Bernapas", "Melihat", "Membau", "Berbicara"], ans: 2 },
+            { q: "Sinonim dari 'Fiktif' adalah...", opt: ["Nyata", "Khayalan", "Asli", "Faktual"], ans: 1 },
+            { q: "Jika harga turun, permintaan naik. Harga barang A turun. Maka...", opt: ["Permintaan barang A turun", "Permintaan barang A naik", "Permintaan tetap", "Barang A tidak laku"], ans: 1 },
+            { q: "100, 90, 80, 70, ...", opt: ["50", "60", "65", "55"], ans: 1 }
+        ],
+        // Babak 2: Kuantitatif (30 Soal)
+        [
+            { q: "Hasil dari 3x - 5 = 10. Maka nilai x adalah...", opt: ["3", "5", "15", "8"], ans: 1 },
+            { q: "Sebuah segitiga memiliki alas 10 cm dan tinggi 12 cm. Luasnya adalah...", opt: ["60 cm²", "120 cm²", "30 cm²", "22 cm²"], ans: 0 },
+            { q: "Peluang munculnya angka genap pada pelemparan satu buah dadu adalah...", opt: ["1/2", "1/3", "1/4", "1/6"], ans: 0 },
+            { q: "25% dari 200 adalah...", opt: ["25", "50", "75", "100"], ans: 1 },
+            { q: "Bentuk sederhana dari 2(3x - 4) + 5x adalah...", opt: ["11x - 8", "11x - 4", "6x - 8", "8x + 8"], ans: 0 },
+            { q: "Berapa hasil dari 5 + 3 x 2?", opt: ["16", "11", "10", "13"], ans: 1 },
+            { q: "Luas persegi dengan sisi 8 cm adalah...", opt: ["16 cm²", "32 cm²", "64 cm²", "128 cm²"], ans: 2 },
+            { q: "Jika harga baju Rp100.000 diskon 20%, berapa harga jadinya?", opt: ["Rp80.000", "Rp20.000", "Rp120.000", "Rp100.000"], ans: 0 },
+            { q: "Akar kuadrat dari 144 adalah...", opt: ["10", "11", "12", "14"], ans: 2 },
+            { q: "KPK dari 4 dan 6 adalah...", opt: ["10", "12", "24", "2"], ans: 1 },
+            { q: "Hasil dari 2x + 4 = 12. Nilai x adalah...", opt: ["2", "3", "4", "6"], ans: 2 },
+            { q: "Keliling lingkaran dengan jari-jari 7 cm adalah... (π = 22/7)", opt: ["22 cm", "44 cm", "154 cm", "314 cm"], ans: 1 },
+            { q: "50% dari 500 adalah...", opt: ["200", "250", "300", "50"], ans: 1 },
+            { q: "Hasil dari 10 - 2 x 4 adalah...", opt: ["32", "2", "8", "-2"], ans: 1 },
+            { q: "FPB dari 12 dan 18 adalah...", opt: ["2", "3", "6", "36"], ans: 2 },
+            { q: "Sebuah kubus memiliki panjang rusuk 3 cm. Volumenya adalah...", opt: ["9 cm³", "18 cm³", "27 cm³", "81 cm³"], ans: 2 },
+            { q: "Berapa menit dalam 3 jam?", opt: ["120 menit", "150 menit", "180 menit", "200 menit"], ans: 2 },
+            { q: "Jika 4x = 20, maka x = ...", opt: ["4", "5", "6", "16"], ans: 1 },
+            { q: "Sudut siku-siku besarnya...", opt: ["45 derajat", "90 derajat", "180 derajat", "360 derajat"], ans: 1 },
+            { q: "Bentuk desimal dari 3/4 adalah...", opt: ["0.25", "0.50", "0.75", "0.34"], ans: 2 },
+            { q: "Hasil dari -5 + 8 adalah...", opt: ["-13", "3", "-3", "13"], ans: 1 },
+            { q: "Luas persegi panjang 5 cm x 10 cm adalah...", opt: ["15 cm²", "30 cm²", "50 cm²", "100 cm²"], ans: 2 },
+            { q: "10% dari Rp 50.000 adalah...", opt: ["Rp 500", "Rp 5.000", "Rp 50.000", "Rp 500.000"], ans: 1 },
+            { q: "Nilai dari 2 pangkat 3 adalah...", opt: ["5", "6", "8", "9"], ans: 2 },
+            { q: "Jika x/2 = 8, maka x = ...", opt: ["4", "10", "16", "64"], ans: 2 },
+            { q: "Rata-rata dari 4, 6, dan 8 adalah...", opt: ["5", "6", "7", "18"], ans: 1 },
+            { q: "Sudut lurus besarnya...", opt: ["90 derajat", "180 derajat", "270 derajat", "360 derajat"], ans: 1 },
+            { q: "Bentuk pecahan dari 0.5 adalah...", opt: ["1/4", "1/3", "1/2", "2/5"], ans: 2 },
+            { q: "Hasil dari -10 - (-5) adalah...", opt: ["-15", "15", "-5", "5"], ans: 2 },
+            { q: "Keliling persegi dengan sisi 5 cm adalah...", opt: ["10 cm", "20 cm", "25 cm", "50 cm"], ans: 1 }
+        ],
+        // Babak 3: Literasi Bahasa Indonesia (30 Soal)
+        [
+            { q: "Kalimat yang menggunakan ejaan yang benar adalah...", opt: ["Ia membeli obat di apotik.", "Jadual ujian telah diubah.", "Sistem itu sangat efektif.", "Dia seorang atlit profesional."], ans: 2 },
+            { q: "Ide pokok biasanya terletak pada kalimat...", opt: ["Penjelas", "Utama", "Terakhir selalu", "Sela"], ans: 1 },
+            { q: "Majas yang membandingkan benda mati seolah hidup adalah...", opt: ["Hiperbola", "Metafora", "Personifikasi", "Litotes"], ans: 2 },
+            { q: "Sinonim kata 'Eksklusif' adalah...", opt: ["Umum", "Khusus", "Biasa", "Terbuka"], ans: 1 },
+            { q: "Teks yang berisi opini penulis disebut...", opt: ["Narasi", "Deskripsi", "Argumentasi", "Eksplanasi"], ans: 2 },
+            { q: "Penulisan kata baku yang benar adalah...", opt: ["Antri", "Antre", "Himbau", "Hembus"], ans: 1 },
+            { q: "Cerita rakyat yang tokohnya binatang disebut...", opt: ["Mite", "Legenda", "Fabel", "Sage"], ans: 2 },
+            { q: "Antonim dari kata 'Konveks' adalah...", opt: ["Cekung", "Cembung", "Datar", "Miring"], ans: 0 },
+            { q: "Kalimat yang subjeknya melakukan pekerjaan disebut...", opt: ["Kalimat Pasif", "Kalimat Aktif", "Kalimat Majemuk", "Kalimat Tunggal"], ans: 1 },
+            { q: "Puisi lama yang bersajak a-b-a-b disebut...", opt: ["Gurindam", "Syair", "Pantun", "Karmina"], ans: 2 },
+            { q: "Kata serapan 'Eksport' yang baku adalah...", opt: ["Ekspor", "Eksport", "Import", "Iksport"], ans: 0 },
+            { q: "Gagasan yang menjadi dasar sebuah paragraf disebut...", opt: ["Kalimat Penjelas", "Ide Pokok", "Kesimpulan", "Amanat"], ans: 1 },
+            { q: "Majas melebih-lebihkan suatu hal adalah...", opt: ["Personifikasi", "Metafora", "Hiperbola", "Ironi"], ans: 2 },
+            { q: "Sinonim kata 'Inovasi' adalah...", opt: ["Penemuan", "Peniruan", "Pembaharuan", "Penghancuran"], ans: 2 },
+            { q: "Teks yang menjelaskan proses terjadinya sesuatu disebut...", opt: ["Narasi", "Deskripsi", "Eksplanasi", "Eksposisi"], ans: 2 },
+            { q: "Penulisan di- yang dipisah adalah pada kata...", opt: ["Dimakan", "Dipukul", "Di rumah", "Dilihat"], ans: 2 },
+            { q: "Lawan kata 'Absolut' adalah...", opt: ["Mutlak", "Relatif", "Pasti", "Bebas"], ans: 1 },
+            { q: "Tokoh utama yang memiliki sifat baik disebut...", opt: ["Antagonis", "Tritagonis", "Protagonis", "Figuran"], ans: 2 },
+            { q: "Bentuk terikat 'antar' yang ditulis benar adalah...", opt: ["Antar kota", "Antarkota", "Antar-kota", "Antar Kota"], ans: 1 },
+            { q: "Pesan moral dalam sebuah cerita disebut...", opt: ["Tema", "Alur", "Latar", "Amanat"], ans: 3 },
+            { q: "Kata ganti orang pertama jamak adalah...", opt: ["Saya", "Kamu", "Kami", "Mereka"], ans: 2 },
+            { q: "Majas sindiran halus disebut...", opt: ["Ironi", "Sarkasme", "Sinisme", "Pleonasme"], ans: 0 },
+            { q: "Sinonim kata 'Klarifikasi' adalah...", opt: ["Penyamaran", "Penjelasan", "Penghapusan", "Penyembunyian"], ans: 1 },
+            { q: "Teks yang bertujuan membujuk pembaca disebut...", opt: ["Persuasi", "Argumentasi", "Narasi", "Deskripsi"], ans: 0 },
+            { q: "Imbuhan me- pada kata 'sapu' menjadi...", opt: ["Mensapu", "Mengsapu", "Menyapu", "Melsapu"], ans: 2 },
+            { q: "Antonim dari kata 'Mayor' adalah...", opt: ["Jenderal", "Minor", "Prajurit", "Kopral"], ans: 1 },
+            { q: "Tempat, waktu, dan suasana dalam cerita disebut...", opt: ["Tema", "Amanat", "Latar/Setting", "Alur"], ans: 2 },
+            { q: "Penulisan gelar yang benar adalah...", opt: ["Prof, Dr, Budi", "Prof. Dr. Budi", "Prof Dr Budi.", "Prof. Dr Budi"], ans: 1 },
+            { q: "Kata dasar dari 'Mempertanggungjawabkan' adalah...", opt: ["Tanggung jawab", "Tanggung", "Jawab", "Tanggungjawab"], ans: 0 },
+            { q: "Akhiran -kan pada kata 'bukakan' bermakna...", opt: ["Melakukan untuk orang lain", "Alat", "Tempat", "Keadaan"], ans: 0 }
+        ],
+        // Babak 4: Literasi Bahasa Inggris (30 Soal)
+        [
+            { q: "She ... to the market every morning.", opt: ["go", "goes", "going", "went"], ans: 1 },
+            { q: "The book is ... the table.", opt: ["on", "in", "under", "at"], ans: 0 },
+            { q: "What is the past tense of 'Eat'?", opt: ["Eated", "Eaten", "Ate", "Eating"], ans: 2 },
+            { q: "If it rains, I ... at home.", opt: ["will stay", "stayed", "am staying", "was staying"], ans: 0 },
+            { q: "Antonym of 'Brave' is...", opt: ["Strong", "Coward", "Smart", "Tall"], ans: 1 },
+            { q: "He ... a letter right now.", opt: ["write", "writes", "is writing", "wrote"], ans: 2 },
+            { q: "They ... playing football yesterday.", opt: ["are", "is", "were", "was"], ans: 2 },
+            { q: "Synonym of 'Beautiful' is...", opt: ["Ugly", "Pretty", "Bad", "Angry"], ans: 1 },
+            { q: "I have ... apple in my bag.", opt: ["a", "an", "the", "some"], ans: 1 },
+            { q: "Where ... you live?", opt: ["do", "does", "is", "are"], ans: 0 },
+            { q: "My father ... a car last year.", opt: ["buy", "buys", "bought", "buying"], ans: 2 },
+            { q: "She is the ... student in the class.", opt: ["smart", "smarter", "smartest", "most smart"], ans: 2 },
+            { q: "I ... my homework yet.", opt: ["have finished", "haven't finished", "finish", "finished"], ans: 1 },
+            { q: "Antonym of 'Expensive' is...", opt: ["Cheap", "Costly", "Rich", "Poor"], ans: 0 },
+            { q: "He is good ... playing chess.", opt: ["in", "on", "at", "for"], ans: 2 },
+            { q: "We ... to Bali next week.", opt: ["go", "went", "will go", "gone"], ans: 2 },
+            { q: "The cat is hiding ... the bed.", opt: ["on", "under", "above", "in"], ans: 1 },
+            { q: "Synonym of 'Fast' is...", opt: ["Slow", "Quick", "Lazy", "Tired"], ans: 1 },
+            { q: "How ... apples do you have?", opt: ["much", "many", "little", "few"], ans: 1 },
+            { q: "This is ... book.", opt: ["my", "mine", "me", "I"], ans: 0 },
+            { q: "She was ... when she heard the news.", opt: ["cry", "crying", "cried", "cries"], ans: 1 },
+            { q: "He works ... a hospital.", opt: ["in", "on", "at", "to"], ans: 0 },
+            { q: "Antonym of 'Hot' is...", opt: ["Warm", "Cold", "Boiling", "Sun"], ans: 1 },
+            { q: "I like ... pizza.", opt: ["eat", "eating", "ate", "eaten"], ans: 1 },
+            { q: "Can you help ... ?", opt: ["I", "my", "me", "mine"], ans: 2 },
+            { q: "They ... just arrived.", opt: ["has", "have", "are", "is"], ans: 1 },
+            { q: "Synonym of 'Happy' is...", opt: ["Sad", "Glad", "Angry", "Bored"], ans: 1 },
+            { q: "I don't have ... money.", opt: ["some", "any", "many", "a"], ans: 1 },
+            { q: "The sun ... in the east.", opt: ["rise", "rises", "rose", "rising"], ans: 1 },
+            { q: "It is ... raining today.", opt: ["not", "no", "none", "nothing"], ans: 0 }
+        ],
+        // Babak 5: Literasi Sains & Sosial (30 Soal)
+        [
+            { q: "Proses pembuatan makanan pada tumbuhan disebut...", opt: ["Respirasi", "Fotosintesis", "Transpirasi", "Ekskresi"], ans: 1 },
+            { q: "Ibukota negara Filipina adalah...", opt: ["Hanoi", "Manila", "Bangkok", "Kuala Lumpur"], ans: 1 },
+            { q: "Planet terdekat dengan matahari adalah...", opt: ["Venus", "Bumi", "Mars", "Merkurius"], ans: 3 },
+            { q: "Peristiwa meleburnya es menjadi air disebut...", opt: ["Membeku", "Mencair", "Menguap", "Menyublim"], ans: 1 },
+            { q: "Negara di Asia Tenggara yang tidak pernah dijajah adalah...", opt: ["Indonesia", "Malaysia", "Thailand", "Vietnam"], ans: 2 },
+            { q: "Bagian sel yang berfungsi sebagai pusat kendali sel (Inti Sel) disebut...", opt: ["Sitoplasma", "Membran Sel", "Nukleus", "Mitokondria"], ans: 2 },
+            { q: "Candi Borobudur bercorak agama...", opt: ["Hindu", "Buddha", "Islam", "Konghucu"], ans: 1 },
+            { q: "Gaya tarik bumi disebut gaya...", opt: ["Gesek", "Magnet", "Gravitasi", "Pegas"], ans: 2 },
+            { q: "Ibukota provinsi Jawa Timur adalah...", opt: ["Semarang", "Surabaya", "Bandung", "Malang"], ans: 1 },
+            { q: "Hewan pemakan daging disebut...", opt: ["Herbivora", "Karnivora", "Omnivora", "Insektivora"], ans: 1 },
+            { q: "Benua terluas di dunia adalah...", opt: ["Eropa", "Afrika", "Amerika", "Asia"], ans: 3 },
+            { q: "Penemu lampu pijar adalah...", opt: ["Thomas Alva Edison", "Alexander Graham Bell", "Albert Einstein", "Isaac Newton"], ans: 0 },
+            { q: "Proklamasi Kemerdekaan RI dibacakan pada tanggal...", opt: ["17 Agustus 1945", "1 Juni 1945", "28 Oktober 1928", "21 April 1879"], ans: 0 },
+            { q: "Benda yang dapat menarik besi disebut...", opt: ["Kayu", "Plastik", "Magnet", "Karet"], ans: 2 },
+            { q: "Semboyan Bhinneka Tunggal Ika terdapat pada kitab...", opt: ["Sutasoma", "Negarakertagama", "Pararaton", "Ramayana"], ans: 0 },
+            { q: "Zat hijau daun disebut...", opt: ["Kloroplas", "Klorofil", "Stomata", "Kambium"], ans: 1 },
+            { q: "Sungai terpanjang di Indonesia adalah...", opt: ["Sungai Musi", "Sungai Mahakam", "Sungai Kapuas", "Sungai Bengawan Solo"], ans: 2 },
+            { q: "Satuan gaya dalam SI adalah...", opt: ["Joule", "Watt", "Newton", "Pascal"], ans: 2 },
+            { q: "Kerajaan Islam pertama di Indonesia adalah...", opt: ["Demak", "Mataram", "Samudera Pasai", "Aceh"], ans: 2 },
+            { q: "Perubahan wujud gas menjadi cair disebut...", opt: ["Menguap", "Membeku", "Mengembun", "Menyublim"], ans: 2 },
+            { q: "Organ pencernaan yang menyerap sari makanan adalah...", opt: ["Lambung", "Usus Halus", "Usus Besar", "Kerongkongan"], ans: 1 },
+            { q: "Garis khatulistiwa melintasi kota...", opt: ["Jakarta", "Pontianak", "Makassar", "Medan"], ans: 1 },
+            { q: "Alat pengukur suhu disebut...", opt: ["Barometer", "Termometer", "Higrometer", "Anemometer"], ans: 1 },
+            { q: "Pahlawan dari Aceh yang terkenal adalah...", opt: ["Cut Nyak Dien", "Kartini", "Diponegoro", "Pattimura"], ans: 0 },
+            { q: "Planet terbesar dalam tata surya adalah...", opt: ["Bumi", "Mars", "Jupiter", "Saturnus"], ans: 2 },
+            { q: "Gas yang kita hirup saat bernapas adalah...", opt: ["Karbon dioksida", "Oksigen", "Nitrogen", "Hidrogen"], ans: 1 },
+            { q: "Gunung tertinggi di Pulau Jawa adalah...", opt: ["Gunung Merapi", "Gunung Bromo", "Gunung Semeru", "Gunung Rinjani"], ans: 2 },
+            { q: "Sumber energi utama di bumi adalah...", opt: ["Batu bara", "Minyak bumi", "Matahari", "Angin"], ans: 2 },
+            { q: "ASEAN didirikan di kota...", opt: ["Jakarta", "Bangkok", "Manila", "Singapura"], ans: 1 },
+            { q: "Hewan yang berkembang biak dengan bertelur disebut...", opt: ["Vivipar", "Ovipar", "Ovovivipar", "Mamalia"], ans: 1 }
+        ]
+    ];
+
+    // --- VARIABEL STATE ---
+    let userData = {};
+    let currentRound = 0;
+    let scores = [];
+    let examInterval;
+    let soalAktifUjian = []; // Array untuk menyimpan 5 soal yang terpilih per babak
+    
+    // --- CEK LOCAL STORAGE KETIKA HALAMAN DIBUKA ---
+    window.onload = () => {
+        const savedData = localStorage.getItem('snbt_sim_data');
+        if(savedData) {
+            userData = JSON.parse(savedData);
+            tampilkanHasilAkhir();
+        }
+    };
+
+    // --- FUNGSI ALUR ---
+    function mulaiAntrean() {
+        const nama = document.getElementById('i_nama').value;
+        const nisn = document.getElementById('i_nisn').value;
+        const tgl = document.getElementById('i_tgllahir').value;
+        const sekolah = document.getElementById('i_sekolah').value;
+        const kota = document.getElementById('i_kota').value;
+        const prov = document.getElementById('i_prov').value;
+        const univ = document.getElementById('i_univ').value;
+        
+        const fakVal = document.getElementById('i_fakultas').value.split('|');
+        const fakultas = fakVal[0];
+        const kkm = parseInt(fakVal[1]);
+
+        if(!nama || !nisn || !tgl || !sekolah || !kota || !prov) {
+            alert("Harap lengkapi semua data!"); return;
+        }
+
+        // Generate Noreg Acak 9 Digit
+        const noreg = Math.floor(100000000 + Math.random() * 900000000);
+
+        userData = { nama, nisn, tgl, sekolah, kota, prov, univ, fakultas, kkm, noreg, finalScore: 0, lulus: false };
+
+        pindahLayar('screen-login', 'screen-queue');
+        jalankanTimer('queue-timer', 10, mulaiUjian);
+    }
+
+    function mulaiUjian() {
+        currentRound = 0;
+        scores = [];
+        
+        // --- LOGIKA RANDOMIZER SOAL ---
+        // Kita acak 30 soal per babak, lalu potong (slice) cuma ambil 5 soal
+        soalAktifUjian = bankSoal.map(babak => {
+            let salinanSoal = [...babak];
+            // Fisher-Yates Shuffle untuk mengacak array
+            for (let i = salinanSoal.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [salinanSoal[i], salinanSoal[j]] = [salinanSoal[j], salinanSoal[i]];
+            }
+            return salinanSoal.slice(0, 5); // Ambil 5 soal teratas setelah diacak
+        });
+
+        pindahLayar('screen-queue', 'screen-exam');
+        renderBabak();
+    }
+
+    function renderBabak() {
+        document.getElementById('exam-round').innerText = currentRound + 1;
+        document.getElementById('btn-next-babak').innerText = currentRound === 4 ? "Kirim Semua Jawaban" : `Selesai Babak ${currentRound + 1}`;
+        
+        const content = document.getElementById('exam-content');
+        content.innerHTML = '';
+        
+        // Render menggunakan soalAktifUjian (5 soal random terpilih), BUKAN bankSoal langsung
+        soalAktifUjian[currentRound].forEach((soal, index) => {
+            let html = `<div class="question-box">
+                <div class="question-text">${index + 1}. ${soal.q}</div>
+                <div class="options">`;
+            soal.opt.forEach((opsi, i) => {
+                html += `<label><input type="radio" name="q_${index}" value="${i}"> ${opsi}</label>`;
+            });
+            html += `</div></div>`;
+            content.innerHTML += html;
+        });
+
+        // Set Timer 4 Menit (240 Detik)
+        clearInterval(examInterval);
+        jalankanTimer('exam-timer', 240, selesaiBabak, true);
+    }
+
+    function selesaiBabak() {
+        // Hitung nilai babak ini berdasarkan soalAktifUjian
+        let correct = 0;
+        soalAktifUjian[currentRound].forEach((soal, index) => {
+            const selected = document.querySelector(`input[name="q_${index}"]:checked`);
+            if(selected && parseInt(selected.value) === soal.ans) {
+                correct++;
+            }
+        });
+        
+        // Skor per babak: (Benar / 5) * 100
+        let roundScore = (correct / 5) * 100;
+        scores.push(roundScore);
+
+        currentRound++;
+        if(currentRound < 5) {
+            renderBabak();
+        } else {
+            masukPengumuman();
+        }
+    }
+
+    function masukPengumuman() {
+        clearInterval(examInterval);
+        
+        // Hitung Rata-rata dari 5 babak
+        let total = scores.reduce((a, b) => a + b, 0);
+        userData.finalScore = total / 5;
+        userData.lulus = userData.finalScore >= userData.kkm;
+
+        // Simpan ke Local Storage
+        localStorage.setItem('snbt_sim_data', JSON.stringify(userData));
+
+        pindahLayar('screen-exam', 'screen-calc');
+        jalankanTimer('calc-timer', 60, () => {
+            document.getElementById('calc-timer').classList.add('hidden');
+            document.getElementById('btn-lihat-hasil').classList.remove('hidden');
+        });
+    }
+
+    function tampilkanHasil() {
+        pindahLayar('screen-calc', 'screen-result');
+        tampilkanHasilAkhir();
+    }
+
+    function tampilkanHasilAkhir() {
+        document.getElementById('screen-login').classList.add('hidden');
+        document.getElementById('screen-queue').classList.add('hidden');
+        document.getElementById('screen-exam').classList.add('hidden');
+        document.getElementById('screen-calc').classList.add('hidden');
+        document.getElementById('screen-result').classList.remove('hidden');
+
+        // Isi Data ke Kartu
+        document.getElementById('res-nisn').innerText = userData.nisn;
+        document.getElementById('res-noreg').innerText = userData.noreg;
+        document.getElementById('res-nama').innerText = userData.nama;
+        document.getElementById('res-fakultas').innerText = userData.fakultas;
+        document.getElementById('res-univ-text').innerText = userData.univ;
+        
+        // Format Tanggal
+        const dateObj = new Date(userData.tgl);
+        document.getElementById('res-tgl').innerText = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
+        
+        document.getElementById('res-sekolah').innerText = userData.sekolah;
+        document.getElementById('res-kota').innerText = userData.kota;
+        document.getElementById('res-prov').innerText = userData.prov;
+
+        // Atur Warna dan Teks berdasarkan Kelulusan
+        const headerBox = document.getElementById('res-header-box');
+        const title = document.getElementById('res-status-title');
+        const subtitle = document.getElementById('res-status-subtitle');
+
+        if(userData.lulus) {
+            headerBox.className = "res-header res-header-lolos";
+            title.innerText = "SELAMAT! ANDA DINYATAKAN LULUS SELEKSI SNBT T2";
+            subtitle.innerText = "";
+        } else {
+            headerBox.className = "res-header res-header-gagal";
+            title.innerText = "ANDA DINYATAKAN TIDAK LULUS SELEKSI SNBT T2";
+            subtitle.innerText = "MASIH ADA KESEMPATAN MENDAFTAR DAN MENGIKUTI SELEKSI MANDIRI PTN.";
+        }
+    }
+
+    // --- UTILS ---
+    function pindahLayar(idLama, idBaru) {
+        document.getElementById(idLama).classList.add('hidden');
+        document.getElementById(idBaru).classList.remove('hidden');
+    }
+
+    function jalankanTimer(elementId, seconds, callback, isMinutes = false) {
+        let el = document.getElementById(elementId);
+        let s = seconds;
+        
+        examInterval = setInterval(() => {
+            s--;
+            if(isMinutes) {
+                let m = Math.floor(s / 60);
+                let remS = s % 60;
+                el.innerText = `${String(m).padStart(2, '0')}:${String(remS).padStart(2, '0')}`;
+            } else {
+                el.innerText = s;
+            }
+            
+            if(s <= 0) {
+                clearInterval(examInterval);
+                callback();
+            }
+        }, 1000);
+    }
+</script>
+
+</body>
+</html>
