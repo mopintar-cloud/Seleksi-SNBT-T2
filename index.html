@@ -12,8 +12,10 @@
         .container { background: white; width: 100%; max-width: 600px; min-height: 100vh; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
         .hidden { display: none !important; }
 
+        /* Header SNPMB */
         .snpmb-header { background: #004a99; color: white; padding: 15px 20px; text-align: center; font-weight: bold; font-size: 1.2rem; }
 
+        /* Forms & Inputs */
         .content { padding: 30px; flex: 1; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 5px; color: #555; }
@@ -21,9 +23,11 @@
         button { width: 100%; padding: 12px; background: #004a99; color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
         button:hover { background: #003366; }
 
+        /* Queues & Loaders */
         .center-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 40px; }
         .timer-big { font-size: 4rem; font-weight: bold; color: #004a99; margin: 20px 0; }
         
+        /* Exam Screen */
         .exam-header { display: flex; justify-content: space-between; align-items: center; background: #eee; padding: 15px; border-bottom: 2px solid #ddd; }
         .exam-timer { color: #d32f2f; font-weight: bold; font-size: 1.2rem; }
         .question-box { margin-bottom: 25px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
@@ -32,6 +36,7 @@
         .options label:hover { background: #eef; }
         .options input { margin-right: 10px; }
 
+        /* Result Card (Mirip Asli) */
         .result-card { width: 100%; height: 100vh; display: flex; flex-direction: column; }
         .res-header { padding: 30px 20px; color: white; font-weight: bold; }
         .res-header-lolos { background: linear-gradient(to right, #003366, #0066cc); }
@@ -76,6 +81,8 @@
                 <option value="INSTITUT TEKNOLOGI SEPULUH NOPEMBER">Institut Teknologi Sepuluh Nopember (ITS)</option>
                 <option value="UNIVERSITAS BRAWIJAYA">Universitas Brawijaya (UB)</option>
                 <option value="UNIVERSITAS JENDERAL SOEDIRMAN">Universitas Jenderal Soedirman (UNSOED)</option>
+                <option value="INSTITUT SENI INDONESIA">Institut Seni Indonesia (ISI)</option>
+                <option value="UNIVERSITAS MUHAMMADIYAH MALANG">Universitas Muhammadiyah Malang (UMM)</option>
             </select>
         </div>
 
@@ -90,6 +97,8 @@
                 <option value="Administrasi Publik|75">Administrasi Publik (KKM: 75)</option>
                 <option value="Sastra Inggris|72">Sastra Inggris (KKM: 72)</option>
                 <option value="Pendidikan Guru SD|70">Pendidikan Guru SD (KKM: 70)</option>
+                <option value="Kedokteran|90">Fakultas Seni Pertunjukan (KKM: 90)</option>
+                
             </select>
         </div>
 
@@ -108,7 +117,7 @@
             <div class="exam-timer" id="exam-timer">04:00</div>
         </div>
         <div class="content" id="exam-content" style="overflow-y: auto; max-height: calc(100vh - 140px);">
-        </div>
+            </div>
         <div style="padding: 15px; border-top: 1px solid #ddd; background: white;">
             <button onclick="selesaiBabak()" id="btn-next-babak">Selesai Babak 1</button>
         </div>
@@ -154,6 +163,7 @@
 </div>
 
 <script>
+    // --- DATABASE SOAL (30 Soal per Babak) ---
     const bankSoal = [
         // Babak 1: Penalaran Umum (30 Soal)
         [
@@ -221,7 +231,7 @@
             { q: "Hasil dari -10 - (-5) adalah...", opt: ["-15", "15", "-5", "5"], ans: 2 },
             { q: "Keliling persegi dengan sisi 5 cm adalah...", opt: ["10 cm", "20 cm", "25 cm", "50 cm"], ans: 1 }
         ],
-        // Babak 3: Literasi Bahasa Indonesia
+        // Babak 3: Literasi Bahasa Indonesia (30 Soal)
         [
             { q: "Kalimat yang menggunakan ejaan yang benar adalah...", opt: ["Ia membeli obat di apotik.", "Jadual ujian telah diubah.", "Sistem itu sangat efektif.", "Dia seorang atlit profesional."], ans: 2 },
             { q: "Ide pokok biasanya terletak pada kalimat...", opt: ["Penjelas", "Utama", "Terakhir selalu", "Sela"], ans: 1 },
@@ -254,7 +264,7 @@
             { q: "Kata dasar dari 'Mempertanggungjawabkan' adalah...", opt: ["Tanggung jawab", "Tanggung", "Jawab", "Tanggungjawab"], ans: 0 },
             { q: "Akhiran -kan pada kata 'bukakan' bermakna...", opt: ["Melakukan untuk orang lain", "Alat", "Tempat", "Keadaan"], ans: 0 }
         ],
-        // Babak 4: Literasi Bahasa Inggris
+        // Babak 4: Literasi Bahasa Inggris (30 Soal)
         [
             { q: "She ... to the market every morning.", opt: ["go", "goes", "going", "went"], ans: 1 },
             { q: "The book is ... the table.", opt: ["on", "in", "under", "at"], ans: 0 },
@@ -287,14 +297,14 @@
             { q: "The sun ... in the east.", opt: ["rise", "rises", "rose", "rising"], ans: 1 },
             { q: "It is ... raining today.", opt: ["not", "no", "none", "nothing"], ans: 0 }
         ],
-        // Babak 5: Literasi Sains & Sosial
+        // Babak 5: Literasi Sains & Sosial (30 Soal)
         [
             { q: "Proses pembuatan makanan pada tumbuhan disebut...", opt: ["Respirasi", "Fotosintesis", "Transpirasi", "Ekskresi"], ans: 1 },
             { q: "Ibukota negara Filipina adalah...", opt: ["Hanoi", "Manila", "Bangkok", "Kuala Lumpur"], ans: 1 },
             { q: "Planet terdekat dengan matahari adalah...", opt: ["Venus", "Bumi", "Mars", "Merkurius"], ans: 3 },
             { q: "Peristiwa meleburnya es menjadi air disebut...", opt: ["Membeku", "Mencair", "Menguap", "Menyublim"], ans: 1 },
             { q: "Negara di Asia Tenggara yang tidak pernah dijajah adalah...", opt: ["Indonesia", "Malaysia", "Thailand", "Vietnam"], ans: 2 },
-            { q: "Bagian sel yang berfungsi sebagai pusat kendali sel (Inti Sel) disebut...", opt: ["Sitoplasma", "Membran Sel", "Inti Sel", "Mitokondria"], ans: 2 },
+            { q: "Bagian sel yang berfungsi sebagai pusat kendali sel (Inti Sel) disebut...", opt: ["Sitoplasma", "Membran Sel", "Nukleus", "Mitokondria"], ans: 2 },
             { q: "Candi Borobudur bercorak agama...", opt: ["Hindu", "Buddha", "Islam", "Konghucu"], ans: 1 },
             { q: "Gaya tarik bumi disebut gaya...", opt: ["Gesek", "Magnet", "Gravitasi", "Pegas"], ans: 2 },
             { q: "Ibukota provinsi Jawa Timur adalah...", opt: ["Semarang", "Surabaya", "Bandung", "Malang"], ans: 1 },
@@ -325,12 +335,11 @@
     // --- VARIABEL STATE ---
     let userData = {};
     let currentRound = 0;
-    let totalBenar = 0;
-    let totalSoalSeharusnya = 0;
+    let scores = [];
     let examInterval;
-    let soalAktifUjian = []; 
+    let soalAktifUjian = []; // Array untuk menyimpan 5 soal yang terpilih per babak
     
-    // --- CEK LOCAL STORAGE ---
+    // --- CEK LOCAL STORAGE KETIKA HALAMAN DIBUKA ---
     window.onload = () => {
         const savedData = localStorage.getItem('snbt_sim_data');
         if(savedData) {
@@ -339,6 +348,7 @@
         }
     };
 
+    // --- FUNGSI ALUR ---
     function mulaiAntrean() {
         const nama = document.getElementById('i_nama').value;
         const nisn = document.getElementById('i_nisn').value;
@@ -347,6 +357,7 @@
         const kota = document.getElementById('i_kota').value;
         const prov = document.getElementById('i_prov').value;
         const univ = document.getElementById('i_univ').value;
+        
         const fakVal = document.getElementById('i_fakultas').value.split('|');
         const fakultas = fakVal[0];
         const kkm = parseInt(fakVal[1]);
@@ -355,7 +366,9 @@
             alert("Harap lengkapi semua data!"); return;
         }
 
+        // Generate Noreg Acak 9 Digit
         const noreg = Math.floor(100000000 + Math.random() * 900000000);
+
         userData = { nama, nisn, tgl, sekolah, kota, prov, univ, fakultas, kkm, noreg, finalScore: 0, lulus: false };
 
         pindahLayar('screen-login', 'screen-queue');
@@ -364,13 +377,18 @@
 
     function mulaiUjian() {
         currentRound = 0;
-        totalBenar = 0;
-        totalSoalSeharusnya = 0;
+        scores = [];
         
-        // Pilih 10 soal per babak secara acak
+        // --- LOGIKA RANDOMIZER SOAL ---
+        // Kita acak 30 soal per babak, lalu potong (slice) cuma ambil 5 soal
         soalAktifUjian = bankSoal.map(babak => {
-            let shuffled = [...babak].sort(() => 0.5 - Math.random());
-            return shuffled.slice(0, 10); 
+            let salinanSoal = [...babak];
+            // Fisher-Yates Shuffle untuk mengacak array
+            for (let i = salinanSoal.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [salinanSoal[i], salinanSoal[j]] = [salinanSoal[j], salinanSoal[i]];
+            }
+            return salinanSoal.slice(0, 5); // Ambil 5 soal teratas setelah diacak
         });
 
         pindahLayar('screen-queue', 'screen-exam');
@@ -379,37 +397,41 @@
 
     function renderBabak() {
         document.getElementById('exam-round').innerText = currentRound + 1;
-        document.getElementById('btn-next-babak').innerText = currentRound === 4 ? "Kirim Semua Jawaban" : `Lanjut Babak ${currentRound + 2}`;
+        document.getElementById('btn-next-babak').innerText = currentRound === 4 ? "Kirim Semua Jawaban" : `Selesai Babak ${currentRound + 1}`;
         
         const content = document.getElementById('exam-content');
         content.innerHTML = '';
         
+        // Render menggunakan soalAktifUjian (5 soal random terpilih), BUKAN bankSoal langsung
         soalAktifUjian[currentRound].forEach((soal, index) => {
             let html = `<div class="question-box">
                 <div class="question-text">${index + 1}. ${soal.q}</div>
                 <div class="options">`;
-            // Menggunakan name yang unik gabungan babak dan index agar tidak tertukar
             soal.opt.forEach((opsi, i) => {
-                html += `<label><input type="radio" name="round_${currentRound}_q_${index}" value="${i}"> ${opsi}</label>`;
+                html += `<label><input type="radio" name="q_${index}" value="${i}"> ${opsi}</label>`;
             });
             html += `</div></div>`;
             content.innerHTML += html;
         });
 
-        content.scrollTop = 0;
+        // Set Timer 4 Menit (240 Detik)
         clearInterval(examInterval);
-        jalankanTimer('exam-timer', 240, selesaiBabak, true); // 4 Menit
+        jalankanTimer('exam-timer', 240, selesaiBabak, true);
     }
 
     function selesaiBabak() {
-        // Hitung jawaban benar di babak yang baru saja selesai
+        // Hitung nilai babak ini berdasarkan soalAktifUjian
+        let correct = 0;
         soalAktifUjian[currentRound].forEach((soal, index) => {
-            const selected = document.querySelector(`input[name="round_${currentRound}_q_${index}"]:checked`);
+            const selected = document.querySelector(`input[name="q_${index}"]:checked`);
             if(selected && parseInt(selected.value) === soal.ans) {
-                totalBenar++;
+                correct++;
             }
-            totalSoalSeharusnya++;
         });
+        
+        // Skor per babak: (Benar / 5) * 100
+        let roundScore = (correct / 5) * 100;
+        scores.push(roundScore);
 
         currentRound++;
         if(currentRound < 5) {
@@ -422,14 +444,17 @@
     function masukPengumuman() {
         clearInterval(examInterval);
         
-        // Skor Akhir = (Total Benar / 50 soal) * 100
-        userData.finalScore = (totalBenar / totalSoalSeharusnya) * 100;
+        // Hitung Rata-rata dari 5 babak
+        let total = scores.reduce((a, b) => a + b, 0);
+        userData.finalScore = total / 5;
         userData.lulus = userData.finalScore >= userData.kkm;
 
+        // Simpan ke Local Storage
         localStorage.setItem('snbt_sim_data', JSON.stringify(userData));
 
         pindahLayar('screen-exam', 'screen-calc');
         jalankanTimer('calc-timer', 60, () => {
+            document.getElementById('calc-timer').classList.add('hidden');
             document.getElementById('btn-lihat-hasil').classList.remove('hidden');
         });
     }
@@ -446,12 +471,14 @@
         document.getElementById('screen-calc').classList.add('hidden');
         document.getElementById('screen-result').classList.remove('hidden');
 
+        // Isi Data ke Kartu
         document.getElementById('res-nisn').innerText = userData.nisn;
         document.getElementById('res-noreg').innerText = userData.noreg;
         document.getElementById('res-nama').innerText = userData.nama;
         document.getElementById('res-fakultas').innerText = userData.fakultas;
         document.getElementById('res-univ-text').innerText = userData.univ;
         
+        // Format Tanggal
         const dateObj = new Date(userData.tgl);
         document.getElementById('res-tgl').innerText = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
         
@@ -459,6 +486,7 @@
         document.getElementById('res-kota').innerText = userData.kota;
         document.getElementById('res-prov').innerText = userData.prov;
 
+        // Atur Warna dan Teks berdasarkan Kelulusan
         const headerBox = document.getElementById('res-header-box');
         const title = document.getElementById('res-status-title');
         const subtitle = document.getElementById('res-status-subtitle');
@@ -474,6 +502,7 @@
         }
     }
 
+    // --- UTILS ---
     function pindahLayar(idLama, idBaru) {
         document.getElementById(idLama).classList.add('hidden');
         document.getElementById(idBaru).classList.remove('hidden');
@@ -503,3 +532,4 @@
 
 </body>
 </html>
+
